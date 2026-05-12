@@ -11,6 +11,7 @@ import { TenantActions } from "./tenants/tenant-actions";
 import { Button } from "@/components/ui/button";
 
 import { CreateTenantDialog } from "./tenants/create-tenant-dialog";
+import { getPlan } from "@/lib/plans";
 
 export default async function SuperAdminPage() {
   const tenants = await prisma.tenant.findMany({
@@ -27,12 +28,10 @@ export default async function SuperAdminPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const totalRevenue = tenants.reduce((acc, t) => {
-    if (t.subscriptionPlan === "pro") return acc + 100000;
-    if (t.subscriptionPlan === "professional") return acc + 150000;
-    if (t.subscriptionPlan === "basic") return acc + 50000;
-    return acc;
-  }, 0);
+  const totalRevenue = tenants.reduce(
+    (acc, t) => acc + getPlan(t.subscriptionPlan).price,
+    0
+  );
 
   const thisMonth = new Date();
   thisMonth.setDate(1);

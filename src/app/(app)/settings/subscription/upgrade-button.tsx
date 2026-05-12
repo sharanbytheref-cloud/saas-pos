@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { upgradePlan } from "./actions";
 import { toast } from "sonner";
-import { Loader2, Zap, CheckCircle2, ShieldCheck, Rocket, Crown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Loader2, Zap, Star, CheckCircle2, ShieldCheck, Rocket, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getPlan, formatPlanPrice, type PlanIconKey } from "@/lib/plans";
 import {
   Dialog,
   DialogContent,
@@ -23,28 +25,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const PLAN_DETAILS: Record<string, any> = {
-  basic: {
-    icon: Rocket,
-    color: "text-blue-500",
-    bg: "bg-blue-50",
-    price: 199000,
-    features: ["Quản lý 1 chi nhánh", "Tối đa 500 sản phẩm", "Báo cáo cơ bản"]
-  },
-  pro: {
-    icon: ShieldCheck,
-    color: "text-indigo-500",
-    bg: "bg-indigo-50",
-    price: 499000,
-    features: ["Quản lý 3 chi nhánh", "Sản phẩm không giới hạn", "Tùy biến mẫu in", "Báo cáo chuyên sâu"]
-  },
-  professional: {
-    icon: Crown,
-    color: "text-amber-500",
-    bg: "bg-amber-50",
-    price: 999000,
-    features: ["Chi nhánh không giới hạn", "Tùy biến mẫu in", "Hỗ trợ ưu tiên 24/7", "Đào tạo 1-1"]
-  }
+/**
+ * Display-only styling per plan. Price + feature list come from
+ * src/lib/plans.ts (single source of truth) so all three pricing
+ * surfaces stay in sync.
+ */
+const ICON_BY_KEY: Record<PlanIconKey, LucideIcon> = {
+  zap: Zap,
+  star: Star,
+  rocket: Rocket,
+  shield: ShieldCheck,
+  crown: Crown,
+};
+
+const PLAN_STYLES: Record<string, { color: string; bg: string }> = {
+  basic: { color: "text-blue-500", bg: "bg-blue-50" },
+  pro: { color: "text-indigo-500", bg: "bg-indigo-50" },
+  professional: { color: "text-amber-500", bg: "bg-amber-50" },
+  trial: { color: "text-slate-500", bg: "bg-slate-50" },
 };
 
 export function UpgradeButton({ plan, label, currentPlan }: { plan: string, label: string, currentPlan: string }) {
@@ -53,8 +51,10 @@ export function UpgradeButton({ plan, label, currentPlan }: { plan: string, labe
   const [months, setMonths] = useState("1");
   const router = useRouter();
 
-  const details = PLAN_DETAILS[plan];
-  const totalPrice = (details?.price || 0) * parseInt(months);
+  const planDef = getPlan(plan);
+  const styles = PLAN_STYLES[plan] ?? PLAN_STYLES.trial;
+  const PlanIcon = ICON_BY_KEY[planDef.iconKey];
+  const totalPrice = planDef.price * parseInt(months);
 
   const handleUpgrade = async () => {
     if (plan === currentPlan) {
@@ -83,8 +83,6 @@ export function UpgradeButton({ plan, label, currentPlan }: { plan: string, labe
     );
   }
 
-  const PlanIcon = details?.icon || Zap;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
@@ -100,8 +98,8 @@ export function UpgradeButton({ plan, label, currentPlan }: { plan: string, labe
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px] rounded-[24px]">
         <DialogHeader className="items-center text-center">
-          <div className={`size-16 rounded-2xl ${details?.bg} flex items-center justify-center mb-4`}>
-            <PlanIcon className={`size-8 ${details?.color}`} />
+          <div className={`size-16 rounded-2xl ${styles.bg} flex items-center justify-center mb-4`}>
+            <PlanIcon className={`size-8 ${styles.color}`} />
           </div>
           <DialogTitle className="text-2xl font-black">Nâng cấp lên {label}</DialogTitle>
           <DialogDescription>
@@ -113,7 +111,7 @@ export function UpgradeButton({ plan, label, currentPlan }: { plan: string, labe
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Tính năng nổi bật</h4>
             <ul className="space-y-2">
-              {details?.features.map((f: string) => (
+              {planDef.features.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
                   <CheckCircle2 className="size-4 text-emerald-500" />
                   {f}
@@ -142,7 +140,7 @@ export function UpgradeButton({ plan, label, currentPlan }: { plan: string, labe
               <span className="text-sm text-slate-500">Tổng thanh toán:</span>
               <div className="text-right">
                 <div className="text-xl font-black text-blue-600">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPrice)}
+                  {formatPlanPrice(totalPrice)}
                 </div>
                 <div className="text-[10px] text-slate-400">Gia hạn sau {months} tháng</div>
               </div>

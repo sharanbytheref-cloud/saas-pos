@@ -1,17 +1,20 @@
 import { Check, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Column keys mirror Tenant.subscriptionPlan values in src/lib/plans.ts —
+// keep them named `trial` / `basic` / `professional` so a search for the
+// plan key finds every UI surface that mentions it.
 const features = [
-  { name: "Số lượng sản phẩm", trial: "100", basic: "Vô hạn", premium: "Vô hạn" },
-  { name: "Quản lý IMEI/Serial", trial: true, basic: true, premium: true },
-  { name: "Quy trình Sửa chữa", trial: "Cơ bản", basic: "Toàn diện", premium: "Nâng cao" },
-  { name: "In phiếu & Tem nhãn", trial: true, basic: true, premium: true },
-  { name: "Báo cáo doanh thu", trial: true, basic: true, premium: true },
-  { name: "Báo cáo tồn kho", trial: false, basic: true, premium: true },
-  { name: "Phân quyền nhân viên", trial: false, basic: "2 cấp", premium: "Chi tiết" },
-  { name: "Quản lý chuỗi (Multi-site)", trial: false, basic: false, premium: true },
-  { name: "API & Tích hợp", trial: false, basic: false, premium: true },
-  { name: "Hỗ trợ kỹ thuật", trial: "Email", basic: "Chat & Call", premium: "24/7 Ưu tiên" },
+  { name: "Số lượng sản phẩm", trial: "100", basic: "Vô hạn", professional: "Vô hạn" },
+  { name: "Quản lý IMEI/Serial", trial: true, basic: true, professional: true },
+  { name: "Quy trình Sửa chữa", trial: "Cơ bản", basic: "Toàn diện", professional: "Nâng cao" },
+  { name: "In phiếu & Tem nhãn", trial: true, basic: true, professional: true },
+  { name: "Báo cáo doanh thu", trial: true, basic: true, professional: true },
+  { name: "Báo cáo tồn kho", trial: false, basic: true, professional: true },
+  { name: "Phân quyền nhân viên", trial: false, basic: "2 cấp", professional: "Chi tiết" },
+  { name: "Quản lý chuỗi (Multi-site)", trial: false, basic: false, professional: true },
+  { name: "API & Tích hợp", trial: false, basic: false, professional: true },
+  { name: "Hỗ trợ kỹ thuật", trial: "Email", basic: "Chat & Call", professional: "24/7 Ưu tiên" },
 ];
 
 export function ComparisonSection() {
@@ -43,7 +46,7 @@ export function ComparisonSection() {
                   {renderValue(feature.basic)}
                 </td>
                 <td className="py-6 px-4 text-center text-sm font-bold text-slate-500">
-                  {renderValue(feature.premium)}
+                  {renderValue(feature.professional)}
                 </td>
               </tr>
             ))}
